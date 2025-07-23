@@ -1,14 +1,19 @@
 import React, { useState } from "react";
 import { DndContext } from "@dnd-kit/core";
 import type { DragEndEvent } from "@dnd-kit/core";
-import { arrayMove } from "@dnd-kit/sortable";
 import type { FormElement, FormElementType } from "@/lib/types";
 import { ComponentsPalette } from "@/components/ComponentsPallette";
 import { FormCanvas } from "@/components/FormCanvas";
 import { PropertiesPanel } from "@/components/PropertiesPanel";
+import { useFormElements } from "@/store/formElements";
+import { createDefaultElement } from "@/lib/utils";
 
 function FormEditor() {
-  const [formElements, setFormElements] = useState<FormElement[]>([]);
+  // const [formElements, setFormElements] = useState<FormElement[]>([]);
+  const formElements = useFormElements((state) => state.formElements);
+  const addFormElement = useFormElements((state) => state.addFormElement);
+  const swapFormElement = useFormElements((state) => state.swapFormElements);
+
   const [selectedElement, setSelectedElement] = useState<FormElement | null>(
     null
   );
@@ -22,12 +27,10 @@ function FormEditor() {
       active.data.current?.type === "paletteItem" &&
       over.id === "form-canvas"
     ) {
-      const newElement: FormElement = {
-        id: `field_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
-        type: active.id as FormElementType,
-        label: `New ${active.id}`,
-      };
-      setFormElements((prev: FormElement[]) => [...prev, newElement]);
+      const newElement = createDefaultElement(active.id as FormElementType);
+
+      // setFormElements((prev: FormElement[]) => [...prev, newElement]);
+      addFormElement(newElement);
     } else if (
       // sorting within list
       active.id !== over.id &&
@@ -36,16 +39,18 @@ function FormEditor() {
     ) {
       const oldIndex = formElements.findIndex((el) => el.id === active.id);
       const newIndex = formElements.findIndex((el) => el.id === over.id);
-      setFormElements((items: FormElement[]) =>
-        arrayMove(items, oldIndex, newIndex)
-      );
+      swapFormElement(oldIndex, newIndex);
+
+      // setFormElements((items: FormElement[]) =>
+      //   arrayMove(items, oldIndex, newIndex)
+      // );
     }
   };
 
   const handleUpdateElement = (updated: FormElement) => {
-    setFormElements((prev: FormElement[]) =>
-      prev.map((el) => (el.id === updated.id ? updated : el))
-    );
+    // setFormElements((prev: FormElement[]) =>
+    //   prev.map((el) => (el.id === updated.id ? updated : el))
+    // );
     setSelectedElement(updated);
   };
 
@@ -55,7 +60,7 @@ function FormEditor() {
         <ComponentsPalette />
         <FormCanvas
           formElements={formElements}
-          setFormElements={setFormElements}
+          // setFormElements={setFormElements}
         />
         <PropertiesPanel
           selectedElement={selectedElement}

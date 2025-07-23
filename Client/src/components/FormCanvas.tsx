@@ -1,8 +1,4 @@
-import type {
-  FormCanvasProps,
-  FormElement,
-  SortableFormElementProps,
-} from "@/lib/types";
+import type { FormCanvasProps, SortableFormElementProps } from "@/lib/types";
 import {
   SortableContext,
   useSortable,
@@ -12,6 +8,7 @@ import { FormElementPreview } from "./SortableFormElement";
 import { useDroppable } from "@dnd-kit/core";
 import { useState } from "react";
 import { CSS } from "@dnd-kit/utilities";
+import { useFormElements } from "@/store/formElements";
 
 function SortableFormElement({
   element,
@@ -62,7 +59,10 @@ function SortableFormElement({
   );
 }
 
-export function FormCanvas({ formElements, setFormElements }: FormCanvasProps) {
+export function FormCanvas({ formElements }: FormCanvasProps) {
+  const deleteFormElement = useFormElements(
+    (state) => state.deleteFormElements
+  );
   const { setNodeRef: setDroppableRef } = useDroppable({ id: "form-canvas" });
   const [selectedElementId, setSelectedElementId] = useState<string | null>(
     null
@@ -70,7 +70,8 @@ export function FormCanvas({ formElements, setFormElements }: FormCanvasProps) {
 
   const handleSelectElement = (id: string) => setSelectedElementId(id);
   const handleDeleteElement = (id: string) => {
-    setFormElements((prev: FormElement[]) => prev.filter((el) => el.id !== id));
+    // setFormElements((prev: FormElement[]) => prev.filter((el) => el.id !== id));
+    deleteFormElement(id);
     if (selectedElementId === id) setSelectedElementId(null);
   };
 
